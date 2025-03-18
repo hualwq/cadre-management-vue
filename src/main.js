@@ -16,6 +16,6 @@ app.config.globalProperties.$http = axios; // 全局挂载
 // 4. 使用 Element Plus 和 Vue Router
 app.use(ElementPlus);
 app.use(router);
-app.use(axios)
+app.use(axios);
 // 5. 挂载应用
 app.mount('#app');
