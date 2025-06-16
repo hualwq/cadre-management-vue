@@ -27,12 +27,14 @@
     </div>
   </div>
 </template>
+
 <script>
-import axios from 'axios';
-import {ElForm, ElButton} from 'element-plus';
-import { User, Key} from '@element-plus/icons-vue';
+import axios from 'axios'
+import { ElForm, ElButton, ElMessage } from 'element-plus'
+import { User, Key } from '@element-plus/icons-vue'
+
 export default {
-  components:{
+  components: {
     ElForm,
     ElButton,
     User,
@@ -40,11 +42,11 @@ export default {
   },
   data() {
     return {
-      loginForm: {  
+      loginForm: {
         username: '',
         password: ''
       },
-      loginFormRules: {  
+      loginFormRules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
         ],
@@ -52,41 +54,43 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' }
         ]
       }
-    };
-  },
-  mounted() {
-    console.log('Component mounted successfully');
+    }
   },
   methods: {
     async handleLogin() {
-  if (this.$refs.loginFormRef) {
-    this.$refs.loginFormRef.validate(async (valid) => {
-      if (valid) {
-        try {
-          const response = await axios.post('http://localhost:8001/login/', {
-            username: this.loginForm.username,
-            password: this.loginForm.password
-          });
-          const accessToken = response.data.access;
-          const refreshToken = response.data.refresh;
-          localStorage.setItem('access_token', accessToken);
-          localStorage.setItem('refresh_token', refreshToken);
-          console.log('登录成功');
-          this.$router.push('/home');  
-        } catch (error) {
-          console.log('用户名或密码错误');
-          this.$message.error('用户名或密码错误');
-        }
-      } else {
-        console.log('表单验证失败');
+      if (this.$refs.loginFormRef) {
+        this.$refs.loginFormRef.validate(async (valid) => {
+          if (valid) {
+            try {
+              const response = await axios.post('http://localhost:8088/login', {
+                id: this.loginForm.username,
+                password: this.loginForm.password
+              })
+
+              if (response.data.code === 200) {
+                const token = response.data.data.token
+                localStorage.setItem('jwt_token', token)
+
+                // 设置默认请求头
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+                // 跳转页面
+                this.$router.push('/home')
+              } else {
+                ElMessage.error(response.data.msg || '登录失败')
+              }
+            } catch (error) {
+              console.error(error)
+              ElMessage.error('用户名或密码错误')
+            }
+          } else {
+            console.log('表单验证失败')
+          }
+        })
       }
-    });
-  } else {
-    console.log('表单引用不存在');
+    }
   }
 }
-  }
-};
 </script>
 
 <style scoped>
@@ -96,56 +100,57 @@ export default {
   font-weight: lighter;
   margin-bottom: 20px;
   position: absolute;
-  top: 150px; 
+  top: 150px;
   left: 50%;
   transform: translateX(-50%);
   color: #333;
 }
-  .login_container {
-    background-color: rgba(21, 35, 242, 0.25);
-    height: 100%;
-  }
 
-  .button-container {
-    text-align: center;
-  }
+.login_container {
+  background-color: rgba(21, 35, 242, 0.25);
+  height: 100%;
+}
 
-  .login_box {
-    width: 450px;
-    height: 300px;
-    background-color: #f2f2f2;
-    border-radius: 3px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+.button-container {
+  text-align: center;
+}
 
-    .avatar_box {
-      height: 130px;
-      width: 130px;
-      border: 1px solid #eee;
-      border-radius: 50%;
-      padding: 10px;
-      box-shadow: 0 0 10px #ddd;
-      position: absolute;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
+.login_box {
+  width: 450px;
+  height: 300px;
+  background-color: #f2f2f2;
+  border-radius: 3px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
 
-      img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background-color: #eee;
-      }
-    }
+.avatar_box {
+  height: 130px;
+  width: 130px;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 0 10px #ddd;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+}
 
-    .login_form {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-  }
+.avatar_box img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #eee;
+}
+
+.login_form {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
 </style>
