@@ -197,7 +197,7 @@ async function submitForm() {
   try {
     // 1. 提交主干部信息
     const payload = { ...form.value }
-    const mainRes = await request.post('/cadre/cadreinfo', payload)
+    const mainRes = await request.post('/cadre/cadreinfo', payload, )
     
     if (mainRes.data.code !== 200) {
       ElMessage.error('提交干部信息失败：' + mainRes.data.msg)

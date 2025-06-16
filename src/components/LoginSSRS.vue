@@ -27,11 +27,10 @@
     </div>
   </div>
 </template>
-
 <script>
-import axios from 'axios'
-import { ElForm, ElButton, ElMessage } from 'element-plus'
-import { User, Key } from '@element-plus/icons-vue'
+import axios from 'axios';
+import { ElForm, ElButton } from 'element-plus';
+import { User, Key } from '@element-plus/icons-vue';
 
 export default {
   components: {
@@ -54,7 +53,10 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' }
         ]
       }
-    }
+    };
+  },
+  mounted() {
+    console.log('Component mounted successfully');
   },
   methods: {
     async handleLogin() {
@@ -62,37 +64,32 @@ export default {
         this.$refs.loginFormRef.validate(async (valid) => {
           if (valid) {
             try {
-              const response = await axios.post('http://localhost:8088/login', {
-                id: this.loginForm.username,
+              const response = await axios.post('http://localhost:8001/login/', {
+                username: this.loginForm.username,
                 password: this.loginForm.password
-              })
-
-              if (response.data.code === 200) {
-                const token = response.data.data.token
-                localStorage.setItem('jwt_token', token)
-
-                // 设置默认请求头
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
-                // 跳转页面
-                this.$router.push('/home')
-              } else {
-                ElMessage.error(response.data.msg || '登录失败')
-              }
+              });
+              const { data } = response.data;
+              const token = data.token;
+              const role = data.role;
+              localStorage.setItem('token', token);
+              localStorage.setItem('role', role);
+              console.log('登录成功');
+              this.$router.push('/home');
             } catch (error) {
-              console.error(error)
-              ElMessage.error('用户名或密码错误')
+              console.log('用户名或密码错误');
+              this.$message.error('用户名或密码错误');
             }
           } else {
-            console.log('表单验证失败')
+            console.log('表单验证失败');
           }
-        })
+        });
+      } else {
+        console.log('表单引用不存在');
       }
     }
   }
-}
+};
 </script>
-
 <style scoped>
 .welcome_message {
   text-align: center;
@@ -105,16 +102,13 @@ export default {
   transform: translateX(-50%);
   color: #333;
 }
-
 .login_container {
   background-color: rgba(21, 35, 242, 0.25);
   height: 100%;
 }
-
 .button-container {
   text-align: center;
 }
-
 .login_box {
   width: 450px;
   height: 300px;
@@ -125,7 +119,6 @@ export default {
   top: 50%;
   transform: translate(-50%, -50%);
 }
-
 .avatar_box {
   height: 130px;
   width: 130px;
@@ -138,14 +131,12 @@ export default {
   transform: translate(-50%, -50%);
   background-color: #fff;
 }
-
 .avatar_box img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   background-color: #eee;
 }
-
 .login_form {
   position: absolute;
   bottom: 0;
