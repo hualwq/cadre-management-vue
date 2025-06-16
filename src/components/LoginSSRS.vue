@@ -64,15 +64,13 @@ export default {
         this.$refs.loginFormRef.validate(async (valid) => {
           if (valid) {
             try {
-              const response = await axios.post('http://localhost:8001/login/', {
-                username: this.loginForm.username,
+              const response = await axios.post('http://localhost:8088/login', {
+                id: this.loginForm.username,
                 password: this.loginForm.password
               });
               const { data } = response.data;
-              const token = data.token;
-              const role = data.role;
-              localStorage.setItem('token', token);
-              localStorage.setItem('role', role);
+              localStorage.setItem('role', data.role);
+              localStorage.setItem('jwt_token', data.token);
               console.log('登录成功');
               this.$router.push('/home');
             } catch (error) {

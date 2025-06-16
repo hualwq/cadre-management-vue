@@ -1,96 +1,68 @@
 import { createRouter, createWebHistory } from 'vue-router';
-
 import Login from '../components/LoginSSRS.vue';
-import CadreInfo from '../components/CadreInfoForm.vue'
-import PostAssessment from '../components/PostAssessment.vue'
-import PostCadreposition from '../components/PostCadreposition'
-import Getassessmentbypage from '../components/GetAssessment'
-import Getcadreinfobypage from '../components/GetCadreinfo'
-import GetPositionhistorybypage from '../components/GetPositionhistory'
-import Getassessmentbyid from '../components/GetAssessmentbyid'
-import Getcadreinfobyid from '../components/GetCadreinfobyid'
-import GetPositionhistorybyid from '../components/GetPositionhistorybyid'
-    
+import CadreHome from '../components/CadreHome.vue';
+import PostAssessment from '../components/PostAssessment.vue';
+import PostCadreposition from '../components/PostCadreposition.vue';
+import CadreInfo from '../components/CadreInfoForm.vue';
+
 const routes = [
   {
     path: '/login',
     component: Login,
     name: 'login'
-},
-{
+  },
+  {
     path: '/',
     redirect: '/login'
   },
   {
-    path: '/Cadreinfo',
-    component: CadreInfo,
-    name: CadreInfo
-  },
-  {
-    path: '/postassessment',
-    component: PostAssessment,
-    name: PostAssessment
-  },
-  {
-    path: '/postcadrepos',
-    component: PostCadreposition,
-    name: PostCadreposition
-  },
-  {
-    path: '/getassessmentbypage',
-    component: Getassessmentbypage,
-    name: Getassessmentbypage
-  },
-  {
-    path: '/getcadreinfobypage',
-    component: Getcadreinfobypage,
-    name: Getcadreinfobypage
-  },
-  {
-    path: '/getphbypage',
-    component: GetPositionhistorybypage,
-    name: GetPositionhistorybypage
-  },
-  {
-    path: '/getphbyid',
-    component: GetPositionhistorybyid,
-    name: GetPositionhistorybyid
-  },
-  {
-    path: '/getcadreinfobyid',
-    component: Getcadreinfobyid,
-    name: Getcadreinfobyid
-  },
-  {
-    path: '/getassessmentbyid',
-    component: Getassessmentbyid,
-    name: Getassessmentbyid
+    path: '/home',
+    component: () => {
+      const role = localStorage.getItem('role');
+      if (role === 'cadre') {
+        return CadreHome;
+      } else {
+        // 可添加其他角色的默认页面
+        return Login;
+      }
+    },
+    children: [
+      {
+        path: 'post-assessment',
+        component: PostAssessment
+      },
+      {
+        path: 'post-cadreposition',
+        component: PostCadreposition
+      },
+      {
+        path: 'cadre-info',
+        component: CadreInfo
+      }
+    ]
   }
-
 ];
+
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes
 });
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('access_token');
-  const isLoginRoute = to.path === '/login';
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
 
-  if (to.matched.some(record => record.meta.requireAuth)) {
-    // 需要认证的路由
-    if (!token) {
+  if (token || to.path === '/login') {
+    if (to.path.includes('/home') && role!== 'cadre') {
+      alert('无权访问');
       next('/login');
     } else {
       next();
     }
-  } else if (token && isLoginRoute) {
-    // 已登录但访问登录页，重定向到首页
-    next('/home');
   } else {
-    // 其他情况放行
-    next();
+    alert('无权访问');
+    next('/login');
   }
 });
 
-export default router
+export default router;

@@ -12,7 +12,7 @@
         </td>
       </tr>
       <tr>
-        <td>年 龄</td><td><input v-model="form.age" /></td>
+        <td>年 龄</td><td><el-input-number v-model="form.age" :min="0" :max="150" /></td>
         <td>民 族</td><td><input v-model="form.ethnicGroup" /></td>
         <td>籍 贯</td><td><input v-model="form.nativePlace" /></td>
       </tr>
@@ -121,67 +121,64 @@ import { ElButton, ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
 const form = ref({
-  id: '',
-  name: '', gender: '', birthDate: '', age: '',
-  ethnicGroup: '', nativePlace: '', birthPlace: '',
-  politicalStatus: '', workStartDate: '', healthStatus: '',
-  professionalTitle: '', specialty: '', currentPosition: '',
-  awardsAndPunishments: '', annualAssessment: '',
-  email: '', filledBy: '',
-  fullTimeEducationDegree: '', fullTimeEducationSchool: '',
-  onTheJobEducationDegree: '', onTheJobEducationSchool: '',
-  reportingUnit: '', approvalAuthority: '', administrativeAppointment: '',
-  phone: '', photoUrl: '',
+  user_id: '',
+  name: '',
+  gender: '',
+  birth_date: '',
+  age: 0,
+  ethnic_group: '',
+  native_place: '',
+  birth_place: '',
+  political_status: '',
+  work_start_date: '',
+  health_status: '',
+  professional_title: '',
+  specialty: '',
+  phone: '',
+  current_position: '',
+  awards_and_punishments: '',
+  annual_assessment: '',
+  email: '',
+  filled_by: '',
+  full_time_education_degree: '',
+  full_time_education_school: '',
+  on_the_job_education_degree: '',
+  on_the_job_education_school: '',
+  reporting_unit: '',
+  approval_authority: '',
+  administrative_appointment: '',
+  photo_url: '',
   resumes: [
-    { cadreId: '', startDate: '', endDate: '', organization: '', department: '', position: '' }
+    { user_id: '', start_date: '', end_date: '', organization: '', department: '', position: '' }
   ],
   familyMembers: [
-    { cadreId: '', relation: '', name: '', birthDate: '', politicalStatus: '', workUnit: '' }
+    { user_id: '', relation: '', name: '', birth_date: '', political_status: '', work_unit: '' }
   ]
-})
+});
 
-// 上传照片到后端
+
 async function uploadPhoto(event) {
   const file = event.target.files[0]
   if (!file) return
 
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    // 调用新的上传路由
-    const res = await request.post('/upload/images', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-    
-    if (res.data.code === 200) {
-      // 假设后端返回照片URL
-      form.value.photoUrl = res.data.data.url
-      ElMessage.success('照片上传成功')
-    } else {
-      ElMessage.error('照片上传失败：' + res.data.msg)
-    }
-  } catch (error) {
-    ElMessage.error('照片上传异常')
-    console.error(error)
+  const reader = new FileReader()
+  reader.onload = () => {
+    form.value.photoUrl = reader.result
   }
+  reader.readAsDataURL(file)
 }
 
 function addResume() {
   form.value.resumes.push({
     cadreId: form.value.id,
-    startDate: '', endDate: '',
-    organization: '', department: '', position: ''
+    startDate: '', endDate: '', organization: '', department: '', position: ''
   })
 }
 
 function addFamilyMember() {
   form.value.familyMembers.push({
     cadreId: form.value.id,
-    relation: '', name: '',
-    birthDate: '', politicalStatus: '', workUnit: ''
+    relation: '', name: '', birthDate: '', politicalStatus: '', workUnit: ''
   })
 }
 
@@ -195,49 +192,51 @@ function removeFamilyMember(index) {
 
 async function submitForm() {
   try {
-    // 1. 提交主干部信息
     const payload = { ...form.value }
-    const mainRes = await request.post('/cadre/cadreinfo', payload, )
-    
-    if (mainRes.data.code !== 200) {
-      ElMessage.error('提交干部信息失败：' + mainRes.data.msg)
-      return
-    }
 
-    const cadreId = mainRes.data.data?.cadreId || form.value.id
-    form.value.id = cadreId // 更新本地ID
-    
-    // 2. 上传照片（如果有新照片）
-    if (form.value.photoUrl && !form.value.photoUrl.startsWith('data:')) {
-      // 已有后端URL，无需重复上传
-    } else if (form.value.photoUrl) {
-      // 前端Base64格式，需要上传
-      const file = dataURLtoFile(form.value.photoUrl, 'photo.jpg')
-      const formData = new FormData()
-      formData.append('file', file)
-      const uploadRes = await request.post('/upload/images', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      
-      if (uploadRes.data.code === 200) {
-        form.value.photoUrl = uploadRes.data.data.url
-      } else {
-        ElMessage.error('照片上传失败：' + uploadRes.data.msg)
+    // 干部基本信息是否需要提交
+    if (form.value.name || form.value.gender || form.value.birth_date) {
+      const mainRes = await request.post('/cadre/cadreinfo', payload)
+      if (mainRes.data.code !== 200) {
+        ElMessage.error('提交干部信息失败：' + mainRes.data.msg)
+        return
       }
+      const user_id = mainRes.data.data?.user_id || form.value.user_id
+      form.value.user_id = user_id
     }
 
-    // 3. 提交简历信息（修改为新路由）
-    for (const resume of form.value.resumes) {
-      resume.cadreId = cadreId
+    // 简历信息
+    const validResumes = form.value.resumes.filter(r =>
+      r.startDate || r.endDate || r.organization || r.department || r.position
+    )
+    for (const resume of validResumes) {
+      resume.user_id = form.value.user_id
       await request.post('/cadre/resume', resume)
     }
 
-    // 4. 提交家庭成员信息（修改为新路由）
-    for (const member of form.value.familyMembers) {
-      member.cadreId = cadreId
+    // 家庭成员信息
+    const validMembers = form.value.familyMembers.filter(m =>
+      m.relation || m.name || m.birthDate || m.politicalStatus || m.workUnit
+    )
+    for (const member of validMembers) {
+      member.user_id = form.value.user_id
       await request.post('/cadre/familymember', member)
+    }
+
+    // 照片上传
+    if (form.value.photoUrl && !form.value.photoUrl.startsWith('http')) {
+      const file = dataURLtoFile(form.value.photoUrl, 'photo.jpg')
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('cadreId', form.value.id)
+
+      const imgRes = await request.post('/cadre/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      if (imgRes.data.code !== 200) {
+        ElMessage.error('照片上传失败：' + imgRes.data.msg)
+        return
+      }
     }
 
     ElMessage.success('全部信息提交成功')
@@ -247,19 +246,16 @@ async function submitForm() {
   }
 }
 
-// Base64转File工具函数
 function dataURLtoFile(dataurl, filename) {
-  const arr = dataurl.split(','),
-        mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]), 
-        n = bstr.length, 
-        u8arr = new Uint8Array(n);
-        // eslint-disable-next-line
-  while(n--){
-    u8arr[n] = bstr.charCodeAt(n);
+  const arr = dataurl.split(',')
+  const mime = arr[0].match(/:(.*?);/)[1]
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
   }
-  
-  return new File([u8arr], filename, {type: mime});
+  return new File([u8arr], filename, { type: mime })
 }
 
 function resetForm() {
@@ -331,4 +327,4 @@ textarea {
   margin-top: 20px;
   text-align: center;
 }
-</style>  
+</style>
