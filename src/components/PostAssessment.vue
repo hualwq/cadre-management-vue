@@ -1,19 +1,21 @@
 <template>
   <div class="assessment-container">
     <h2 class="page-title">干部工作考核</h2>
-    
+
     <el-form ref="assessmentForm" :model="form" label-width="100px" class="form-wrapper">
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="学（工）号">
-            <el-input v-model="form.studentId" placeholder="请输入学（工）号" />
+            <el-input v-model="form.user_id" placeholder="请输入学（工）号" />
           </el-form-item>
         </el-col>
+
         <el-col :span="12">
           <el-form-item label="院系">
             <el-input v-model="form.department" placeholder="请输入院系" />
           </el-form-item>
         </el-col>
+
         <el-col :span="12">
           <el-form-item label="类别">
             <el-select v-model="form.category" placeholder="请选择类别" style="width: 100%">
@@ -24,26 +26,28 @@
             </el-select>
           </el-form-item>
         </el-col>
+
         <el-col :span="12">
           <el-form-item label="考核部门">
-            <el-select v-model="form.assessDept" multiple placeholder="请选择考核部门" style="width: 100%">
+            <el-select v-model="form.assess_dept" multiple placeholder="请选择考核部门" style="width: 100%">
               <el-option label="校团委" value="校团委" />
               <el-option label="院系党委" value="院系党委" />
               <el-option label="院系团委" value="院系团委" />
             </el-select>
           </el-form-item>
         </el-col>
+
         <el-col :span="12">
           <el-form-item label="考核年度">
             <el-input v-model="form.year" placeholder="请输入考核年度" />
           </el-form-item>
         </el-col>
       </el-row>
-      
+
       <h3 class="section-title">本年度主要工作说明</h3>
       <div class="work-summary-container">
         <el-input
-          v-model="form.workSummary1"
+          v-model="form.work_summary"
           type="textarea"
           :rows="10"
           placeholder="请围绕本人本年度主要工作展开说明（1000字以内）"
@@ -51,7 +55,7 @@
           show-word-limit
         />
       </div>
-      
+
       <el-form-item style="text-align: center; margin-top: 20px;">
         <el-button type="primary" @click="submitForm">提交考核</el-button>
         <el-button @click="resetForm">重置</el-button>
@@ -61,22 +65,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 
 const assessmentForm = ref(null)
+
 const form = ref({
-  cadreId: '', // 干部ID
-  studentId: '', // 学（工）号
-  department: '', // 院系
-  category: '', // 类别
-  assessDept: [], // 考核部门（多选）
-  year: '', // 考核年度
-  workSummary1: '', // 工作说明1
-  workSummary2: '', // 工作说明2
-  workSummary3: '', // 工作说明3
-  workSummary4: '', // 工作说明4
+  user_id: '',         // 学（工）号
+  department: '',      // 院系
+  category: '',        // 类别
+  assess_dept: [],     // 考核部门（数组形式，提交时转为字符串）
+  year: '',            // 考核年度（字符串输入）
+  work_summary: '',    // 工作说明
 })
 
 // 提交表单
@@ -86,21 +87,16 @@ async function submitForm() {
       if (valid) {
         try {
           const submitData = {
-            cadreId: form.value.cadreId,
+            user_id: form.value.user_id,
             department: form.value.department,
             category: form.value.category,
-            assessDept: form.value.assessDept,
-            year: form.value.year,
-            workSummary: [
-              form.value.workSummary1,
-              form.value.workSummary2,
-              form.value.workSummary3,
-              form.value.workSummary4
-            ].filter(Boolean).join(';')
+            assess_dept: form.value.assess_dept.join(','), // 数组转逗号字符串
+            year: Number(form.value.year), // 转为数字
+            work_summary: form.value.work_summary
           }
-          
+
           const response = await request.post('/cadre/assessment', submitData)
-          
+
           if (response.data.code === 200) {
             ElMessage.success('考核信息提交成功')
           } else {
@@ -130,8 +126,6 @@ function resetForm() {
     }
   }).catch(() => {})
 }
-
-onMounted(() => {})
 </script>
 
 <style scoped>
@@ -165,7 +159,6 @@ onMounted(() => {})
   border-bottom: 1px solid #eee;
 }
 
-/* 使输入框居中 */
 .work-summary-container {
   max-width: 600px;
   margin: 0 auto 20px auto;
@@ -175,11 +168,11 @@ onMounted(() => {})
   .form-wrapper {
     padding: 15px;
   }
-  
+
   .page-title {
     font-size: 20px;
   }
-  
+
   .section-title {
     font-size: 16px;
   }

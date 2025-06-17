@@ -3,7 +3,7 @@ import Login from '../components/LoginSSRS.vue';
 import CadreHome from '../components/CadreHome.vue';
 import PostAssessment from '../components/PostAssessment.vue';
 import PostCadreposition from '../components/PostCadreposition.vue';
-import CadreInfo from '../components/CadreInfoForm.vue';
+import PostCadreInfo from '../components/PostCadreInfoForm.vue';
 
 const routes = [
   {
@@ -36,8 +36,8 @@ const routes = [
         component: PostCadreposition
       },
       {
-        path: 'cadre-info',
-        component: CadreInfo
+        path: 'post-cadreinfo',
+        component: PostCadreInfo
       }
     ]
   }
