@@ -16,7 +16,7 @@
 export default {
   methods: {
     handleSelect(key) {
-      this.$router.push(`/home/${key}`);
+      this.$router.push(`/cadrehome/${key}`);
     }
   }
 };

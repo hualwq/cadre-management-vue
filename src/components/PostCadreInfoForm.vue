@@ -138,25 +138,49 @@ const form = ref({
   family_members: []
 })
 
-const fetchData = async () => {
+const originalForm = ref({}) // 保存原始数据
+
+const fetchUserId = async () => {
   try {
-    const res = await request.get('/admin/cadreinfo')
+    const res = await request.get('/cadre/getuserid')
+    if (res.data.code === 200 && res.data.data) {
+      form.value.user_id = res.data.data.user_id
+      return res.data.data.user_id
+    }
+  } catch (err) {
+    console.error('获取用户 ID 失败', err)
+    ElMessage.error('获取用户 ID 失败')
+  }
+  return null
+}
+
+const fetchData = async () => {
+  const userId = await fetchUserId()
+  if (!userId) return
+
+  try {
+    const res = await request.get('/admin/cadreinfo', {
+      params: { user_id: userId }
+    })
     if (res.data.code === 200 && res.data.data) {
       Object.assign(form.value, res.data.data)
+      Object.assign(originalForm.value, res.data.data) // 保存原始数据
     }
 
     const famRes = await request.get('/admin/fammonbycadreid', {
-      params: { user_id: form.value.user_id }
+      params: { user_id: userId }
     })
     if (famRes.data.code === 200) {
       form.value.family_members = famRes.data.data || []
+      originalForm.value.family_members = [...form.value.family_members] // 保存原始家庭成员数据
     }
 
     const resRes = await request.get('/admin/resmonbycadreid', {
-      params: { user_id: form.value.user_id }
+      params: { user_id: userId }
     })
     if (resRes.data.code === 200) {
       form.value.resumes = resRes.data.data || []
+      originalForm.value.resumes = [...form.value.resumes] // 保存原始简历数据
     }
   } catch (err) {
     console.error('数据加载失败', err)
@@ -177,50 +201,74 @@ const dataURLtoFile = (dataurl, filename) => {
   return new File([u8arr], filename, { type: mime })
 }
 
+// 比较两个对象，返回有变化的字段
+const getChangedFields = (obj1, obj2) => {
+  const changed = {}
+  for (const key in obj1) {
+    if (JSON.stringify(obj1[key])!== JSON.stringify(obj2[key])) {
+      changed[key] = obj1[key]
+    }
+  }
+  return changed
+}
+
 async function submitForm() {
   try {
     // 干部信息
     const method = form.value.user_id ? 'put' : 'post'
-    const mainRes = await request[method]('/cadre/cadreinfo', { ...form.value })
+    const changedMainFields = getChangedFields(form.value, originalForm.value)
+    if (Object.keys(changedMainFields).length > 0) {
+      const mainRes = await request[method]('/cadre/cadreinfo', changedMainFields)
 
-    if (mainRes.data.code !== 200) {
-      ElMessage.error('提交失败：' + mainRes.data.msg)
-      return
+      if (mainRes.data.code!== 200) {
+        ElMessage.error('提交失败：' + mainRes.data.msg)
+        return
+      }
+
+      const user_id = mainRes.data.data?.user_id || form.value.user_id
+      form.value.user_id = user_id
     }
-
-    const user_id = mainRes.data.data?.user_id || form.value.user_id
-    form.value.user_id = user_id
 
     // 简历信息
     for (const resume of form.value.resumes) {
-      resume.user_id = user_id
-      if (resume.id) {
-        await request.put('/cadre/resume', resume)
+      const originalResume = originalForm.value.resumes.find(r => r.id === resume.id)
+      if (originalResume) {
+        const changedResumeFields = getChangedFields(resume, originalResume)
+        if (Object.keys(changedResumeFields).length > 0) {
+          resume.user_id = form.value.user_id
+          await request.put('/cadre/resume', { ...changedResumeFields, user_id: form.value.user_id })
+        }
       } else {
+        resume.user_id = form.value.user_id
         await request.post('/cadre/resume', resume)
       }
     }
 
     // 家庭成员信息
     for (const member of form.value.family_members) {
-      member.user_id = user_id
-      if (member.id) {
-        await request.put('/cadre/familymember', member)
+      const originalMember = originalForm.value.family_members.find(m => m.id === member.id)
+      if (originalMember) {
+        const changedMemberFields = getChangedFields(member, originalMember)
+        if (Object.keys(changedMemberFields).length > 0) {
+          member.user_id = form.value.user_id
+          await request.put('/cadre/familymember', { ...changedMemberFields, user_id: form.value.user_id })
+        }
       } else {
+        member.user_id = form.value.user_id
         await request.post('/cadre/familymember', member)
       }
     }
 
     // 上传照片
-    if (form.value.photo_url && !form.value.photo_url.startsWith('http')) {
+    if (form.value.photo_url &&!form.value.photo_url.startsWith('http')) {
       const file = dataURLtoFile(form.value.photo_url, 'photo.jpg')
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('cadreId', user_id)
+      formData.append('cadreId', form.value.user_id)
       const imgRes = await request.post('/cadre/image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      if (imgRes.data.code !== 200) {
+      if (imgRes.data.code!== 200) {
         ElMessage.error('照片上传失败：' + imgRes.data.msg)
         return
       }
@@ -233,6 +281,7 @@ async function submitForm() {
   }
 }
 
+// 其他函数保持不变
 function resetForm() {
   for (let key in form.value) {
     if (Array.isArray(form.value[key])) {
