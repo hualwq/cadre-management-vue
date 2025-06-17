@@ -60,31 +60,42 @@ export default {
   },
   methods: {
     async handleLogin() {
-      if (this.$refs.loginFormRef) {
-        this.$refs.loginFormRef.validate(async (valid) => {
-          if (valid) {
-            try {
-              const response = await axios.post('http://localhost:8088/login', {
-                id: this.loginForm.username,
-                password: this.loginForm.password
-              });
-              const { data } = response.data;
-              localStorage.setItem('role', data.role);
-              localStorage.setItem('jwt_token', data.token);
-              console.log('登录成功');
-              this.$router.push('/home');
-            } catch (error) {
-              console.log('用户名或密码错误');
-              this.$message.error('用户名或密码错误');
-            }
+  if (this.$refs.loginFormRef) {
+    this.$refs.loginFormRef.validate(async (valid) => {
+      if (valid) {
+        try {
+          const response = await axios.post('http://localhost:8088/login', {
+            id: this.loginForm.username,
+            password: this.loginForm.password
+          });
+          const { data } = response.data;
+
+          // 保存角色和 token
+          localStorage.setItem('role', data.role);
+          localStorage.setItem('jwt_token', data.token);
+          localStorage.setItem('user_id', this.loginForm.username)
+          console.log('登录成功');
+
+          // 根据角色跳转页面
+          if (data.role === 'admin') {
+            this.$router.push('/home/post-assessment'); // admin 默认跳转到某个页面
+          } else if (data.role === 'cadre') {
+            this.$router.push('/cadrehome/post-assessment'); // cadre 默认跳转
           } else {
-            console.log('表单验证失败');
+            this.$message.error('未知角色，无法登录');
           }
-        });
+        } catch (error) {
+          console.log('用户名或密码错误');
+          this.$message.error('用户名或密码错误');
+        }
       } else {
-        console.log('表单引用不存在');
+        console.log('表单验证失败');
       }
-    }
+    });
+  } else {
+    console.log('表单引用不存在');
+  }
+}
   }
 };
 </script>

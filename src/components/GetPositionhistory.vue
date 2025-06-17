@@ -43,7 +43,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import request from '../utils/request.js'
 
 const proofList = ref([])
 const total = ref(0)
@@ -54,7 +54,7 @@ const router = useRouter()
 
 const fetchProofList = async () => {
   try {
-    const res = await axios.get('/admin/phmodbypage', {
+    const res = await request.get('/admin/phmodbypage', {
       params: {
         page: currentPage.value,
       },

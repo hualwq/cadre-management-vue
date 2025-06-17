@@ -102,11 +102,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { ElButton, ElMessage } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
 const form = ref({
+  user_id: '',
   name: '',
   gender: '',
   birth_date: '',
@@ -137,6 +138,111 @@ const form = ref({
   family_members: []
 })
 
+const fetchData = async () => {
+  try {
+    const res = await request.get('/admin/cadreinfo')
+    if (res.data.code === 200 && res.data.data) {
+      Object.assign(form.value, res.data.data)
+    }
+
+    const famRes = await request.get('/admin/fammonbycadreid', {
+      params: { user_id: form.value.user_id }
+    })
+    if (famRes.data.code === 200) {
+      form.value.family_members = famRes.data.data || []
+    }
+
+    const resRes = await request.get('/admin/resmonbycadreid', {
+      params: { user_id: form.value.user_id }
+    })
+    if (resRes.data.code === 200) {
+      form.value.resumes = resRes.data.data || []
+    }
+  } catch (err) {
+    console.error('数据加载失败', err)
+  }
+}
+
+onMounted(() => {
+  fetchData()
+})
+
+const dataURLtoFile = (dataurl, filename) => {
+  const arr = dataurl.split(',')
+  const mime = arr[0].match(/:(.*?);/)[1]
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  while (n--) u8arr[n] = bstr.charCodeAt(n)
+  return new File([u8arr], filename, { type: mime })
+}
+
+async function submitForm() {
+  try {
+    // 干部信息
+    const method = form.value.user_id ? 'put' : 'post'
+    const mainRes = await request[method]('/cadre/cadreinfo', { ...form.value })
+
+    if (mainRes.data.code !== 200) {
+      ElMessage.error('提交失败：' + mainRes.data.msg)
+      return
+    }
+
+    const user_id = mainRes.data.data?.user_id || form.value.user_id
+    form.value.user_id = user_id
+
+    // 简历信息
+    for (const resume of form.value.resumes) {
+      resume.user_id = user_id
+      if (resume.id) {
+        await request.put('/cadre/resume', resume)
+      } else {
+        await request.post('/cadre/resume', resume)
+      }
+    }
+
+    // 家庭成员信息
+    for (const member of form.value.family_members) {
+      member.user_id = user_id
+      if (member.id) {
+        await request.put('/cadre/familymember', member)
+      } else {
+        await request.post('/cadre/familymember', member)
+      }
+    }
+
+    // 上传照片
+    if (form.value.photo_url && !form.value.photo_url.startsWith('http')) {
+      const file = dataURLtoFile(form.value.photo_url, 'photo.jpg')
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('cadreId', user_id)
+      const imgRes = await request.post('/cadre/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      if (imgRes.data.code !== 200) {
+        ElMessage.error('照片上传失败：' + imgRes.data.msg)
+        return
+      }
+    }
+
+    ElMessage.success('提交成功')
+  } catch (e) {
+    console.error(e)
+    ElMessage.error('提交出错')
+  }
+}
+
+function resetForm() {
+  for (let key in form.value) {
+    if (Array.isArray(form.value[key])) {
+      form.value[key] = []
+    } else {
+      form.value[key] = ''
+    }
+  }
+}
+
 function addResume() {
   form.value.resumes.push({
     user_id: form.value.user_id,
@@ -162,80 +268,11 @@ function removeFamilyMember(index) {
 async function uploadPhoto(event) {
   const file = event.target.files[0]
   if (!file) return
-
   const reader = new FileReader()
   reader.onload = () => {
     form.value.photo_url = reader.result
   }
   reader.readAsDataURL(file)
-}
-
-function dataURLtoFile(dataurl, filename) {
-  const arr = dataurl.split(',')
-  const mime = arr[0].match(/:(.*?);/)[1]
-  const bstr = atob(arr[1])
-  let n = bstr.length
-  const u8arr = new Uint8Array(n)
-  while (n--) u8arr[n] = bstr.charCodeAt(n)
-  return new File([u8arr], filename, { type: mime })
-}
-
-async function submitForm() {
-  try {
-    const mainRes = await request.post('/cadre/cadreinfo', { ...form.value })
-    if (mainRes.data.code !== 200) {
-      ElMessage.error('提交干部信息失败：' + mainRes.data.msg)
-      return
-    }
-    const user_id = mainRes.data.data?.user_id || form.value.user_id
-    form.value.user_id = user_id
-
-    for (const resume of form.value.resumes) {
-      resume.user_id = user_id
-      await request.post('/cadre/resume', resume)
-    }
-
-    for (const member of form.value.family_members) {
-      member.user_id = user_id
-      await request.post('/cadre/familymember', member)
-    }
-
-    if (form.value.photo_url && !form.value.photo_url.startsWith('http')) {
-      const file = dataURLtoFile(form.value.photo_url, 'photo.jpg')
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('cadreId', user_id)
-      const imgRes = await request.post('/cadre/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      if (imgRes.data.code !== 200) {
-        ElMessage.error('照片上传失败：' + imgRes.data.msg)
-        return
-      }
-    }
-
-    ElMessage.success('全部信息提交成功')
-  } catch (error) {
-    ElMessage.error('提交异常')
-    console.error(error)
-  }
-}
-
-function resetForm() {
-  for (let key in form.value) {
-    if (Array.isArray(form.value[key])) {
-      form.value[key] = []
-    } else {
-      form.value[key] = ''
-    }
-  }
-  form.value.resumes.push({
-    user_id: '', start_date: '', end_date: '', organization: '', department: '', position: ''
-  })
-  form.value.family_members.push({
-    user_id: '', relation: '', name: '', birth_date: '', political_status: '', work_unit: ''
-  })
-  form.value.photo_url = ''
 }
 </script>
 
