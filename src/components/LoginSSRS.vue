@@ -29,10 +29,11 @@
 </template>
 <script>
 import axios from 'axios';
-import {ElForm, ElButton} from 'element-plus';
-import { User, Key} from '@element-plus/icons-vue';
+import { ElForm, ElButton } from 'element-plus';
+import { User, Key } from '@element-plus/icons-vue';
+
 export default {
-  components:{
+  components: {
     ElForm,
     ElButton,
     User,
@@ -40,11 +41,11 @@ export default {
   },
   data() {
     return {
-      loginForm: {  
+      loginForm: {
         username: '',
         password: ''
       },
-      loginFormRules: {  
+      loginFormRules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
         ],
@@ -63,16 +64,26 @@ export default {
     this.$refs.loginFormRef.validate(async (valid) => {
       if (valid) {
         try {
-          const response = await axios.post('http://localhost:8001/login/', {
-            username: this.loginForm.username,
+          const response = await axios.post('http://localhost:8088/login', {
+            id: this.loginForm.username,
             password: this.loginForm.password
           });
-          const accessToken = response.data.access;
-          const refreshToken = response.data.refresh;
-          localStorage.setItem('access_token', accessToken);
-          localStorage.setItem('refresh_token', refreshToken);
+          const { data } = response.data;
+
+          // 保存角色和 token
+          localStorage.setItem('role', data.role);
+          localStorage.setItem('jwt_token', data.token);
+          localStorage.setItem('user_id', this.loginForm.username)
           console.log('登录成功');
-          this.$router.push('/home');  
+
+          // 根据角色跳转页面
+          if (data.role === 'admin') {
+            this.$router.push('/home/post-assessment'); // admin 默认跳转到某个页面
+          } else if (data.role === 'cadre') {
+            this.$router.push('/cadrehome/post-assessment'); // cadre 默认跳转
+          } else {
+            this.$message.error('未知角色，无法登录');
+          }
         } catch (error) {
           console.log('用户名或密码错误');
           this.$message.error('用户名或密码错误');
@@ -88,7 +99,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .welcome_message {
   text-align: center;
@@ -96,56 +106,51 @@ export default {
   font-weight: lighter;
   margin-bottom: 20px;
   position: absolute;
-  top: 150px; 
+  top: 150px;
   left: 50%;
   transform: translateX(-50%);
   color: #333;
 }
-  .login_container {
-    background-color: rgba(21, 35, 242, 0.25);
-    height: 100%;
-  }
-
-  .button-container {
-    text-align: center;
-  }
-
-  .login_box {
-    width: 450px;
-    height: 300px;
-    background-color: #f2f2f2;
-    border-radius: 3px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-
-    .avatar_box {
-      height: 130px;
-      width: 130px;
-      border: 1px solid #eee;
-      border-radius: 50%;
-      padding: 10px;
-      box-shadow: 0 0 10px #ddd;
-      position: absolute;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-
-      img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background-color: #eee;
-      }
-    }
-
-    .login_form {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-  }
+.login_container {
+  background-color: rgba(21, 35, 242, 0.25);
+  height: 100%;
+}
+.button-container {
+  text-align: center;
+}
+.login_box {
+  width: 450px;
+  height: 300px;
+  background-color: #f2f2f2;
+  border-radius: 3px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.avatar_box {
+  height: 130px;
+  width: 130px;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 0 10px #ddd;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+}
+.avatar_box img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #eee;
+}
+.login_form {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
 </style>
