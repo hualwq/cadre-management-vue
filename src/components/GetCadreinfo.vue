@@ -66,7 +66,7 @@ const fetchCadres = async () => {
         unapproved_only: showOnlyUnapproved.value
       },
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('jwt_token')}`
       }
     })
     if (res.data.code === 200) {
@@ -84,7 +84,10 @@ const handlePageChange = (newPage) => {
 }
 
 const viewDetail = (userId) => {
-  router.push(`/cadre/detail/${userId}`)
+  router.push({
+    name: 'GetCadreinfobyid', // 假设路由名称为 GetCadreinfobyid
+    query: { user_id: userId }
+  })
 }
 
 onMounted(() => {
@@ -104,7 +107,7 @@ onMounted(() => {
   max-width: 1000px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* 让子元素水平居中 */
 }
 
 .page-title {
@@ -117,16 +120,16 @@ onMounted(() => {
   margin-bottom: 20px;
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: center; /* 让复选框居中 */
 }
 
 .table-wrapper {
-  width: 100%;
+  width: 100%; /* 表格宽度为容器宽度 */
 }
 
 .pagination {
   margin-top: 20px;
-  text-align: center;
+  text-align: center; /* 分页按钮居中 */
 }
 
 /* Center align all cell content in the table */

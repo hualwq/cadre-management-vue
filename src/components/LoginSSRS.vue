@@ -71,9 +71,9 @@ export default {
           const { data } = response.data;
 
           // 保存角色和 token
-          localStorage.setItem('role', data.role);
-          localStorage.setItem('jwt_token', data.token);
-          localStorage.setItem('user_id', this.loginForm.username)
+          sessionStorage.setItem('role', data.role);
+          sessionStorage.setItem('jwt_token', data.token);
+          sessionStorage.setItem('user_id', this.loginForm.username)
           console.log('登录成功');
 
           // 根据角色跳转页面

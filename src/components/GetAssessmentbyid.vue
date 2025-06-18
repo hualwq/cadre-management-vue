@@ -41,17 +41,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, ElMessage } from 'vue-router'
-import axios from 'axios'
+// import axios from 'axios'
+import request from '../utils/request.js'
 
 const route = useRoute()
+// 从路由参数中获取 id
 const id = route.query.id
 
 const detail = ref({})
 const selectedGrade = ref('')
 
+// 获取考核详情的函数
 const fetchAssessment = async () => {
   try {
-    const res = await axios.get('/admin/assmodbyid', {
+    const res = await request.get('/admin/assmodbyid', {
       params: { id }
     })
     if (res.data.code === 200) {
@@ -59,14 +62,16 @@ const fetchAssessment = async () => {
     }
   } catch (error) {
     console.error('获取考核详情失败:', error)
+    ElMessage.error('获取考核详情失败，请稍后重试')
   }
 }
 
+// 提交考核等级的函数
 const submitGrade = async () => {
   try {
-    const res = await axios.post('/admin/assessment', {
+    const res = await request.post('/admin/assessment', {
       id: detail.value.id,
-      grade: selectedGrade.value
+      result: selectedGrade.value
     })
     if (res.data.code === 200) {
       ElMessage.success('提交成功')
@@ -79,8 +84,14 @@ const submitGrade = async () => {
   }
 }
 
+// 组件挂载时调用获取考核详情的函数
 onMounted(() => {
-  fetchAssessment()
+  if (id) {
+    fetchAssessment()
+  } else {
+    console.error('未获取到有效的 id 参数')
+    ElMessage.error('未获取到有效的考核记录 id，请检查链接')
+  }
 })
 </script>
 

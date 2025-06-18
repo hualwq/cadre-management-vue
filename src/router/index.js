@@ -4,13 +4,15 @@ import CadreHome from '../components/CadreHome.vue';
 import PostAssessment from '../components/PostAssessment.vue';
 import PostCadreposition from '../components/PostCadreposition.vue';
 import PostCadreInfo from '../components/PostCadreInfoForm.vue';
-// import GetAssessmentbyid from '../components/GetAssessmentbyid.vue';
+import GetAssessmentbyid from '../components/GetAssessmentbyid.vue';
 import GetAssessmentbypage from '../components/GetAssessment.vue';
-// import GetCadreinfobyid from '../components/GetCadreinfobyid.vue';
+import GetCadreinfobyid from '../components/GetCadreinfobyid.vue';
 import GetCadreinfobypage from '../components/GetCadreinfo.vue';
-// import GetPositionhistorybyid from '../components/GetPositionhistorybyid.vue';
+import GetPositionhistorybyid from '../components/GetPositionhistorybyid.vue';
 import GetPositionhistorybypage from '../components/GetPositionhistory.vue';
-import AdminHome from '../components/AdminHome'
+import AdminHome from '../components/AdminHome.vue'
+import GetCadreposList from '../components/GetCadreposList.vue'
+import GetCadreAssList from '../components/GetCadreAssList.vue'
 
 const routes = [
   {
@@ -49,6 +51,21 @@ const routes = [
       {
         path: 'post-positionlist',
         component: GetPositionhistorybypage
+      },
+      {
+        path: 'cadreinfobyid',
+        component: GetCadreinfobyid,
+        name: 'GetCadreinfobyid'
+      },
+      {
+        path: 'assessmentbyid',
+        component: GetAssessmentbyid,
+        name: 'GetAssessmentbyid'
+      },
+      {
+        path: 'positionhistorybyid',
+        component: GetPositionhistorybyid,
+        name: 'GetPositionhistorybyid'
       }
     ]
   },
@@ -59,15 +76,26 @@ const routes = [
     children: [
       {
         path: 'post-assessment',
-        component: PostAssessment
+        component: PostAssessment,
+        name: 'PostAssessment'
       },
       {
         path: 'post-cadreposition',
-        component: PostCadreposition
+        component: PostCadreposition,
+        name: 'PostCadreposition'
       },
       {
         path: 'post-cadreinfo',
-        component: PostCadreInfo
+        component: PostCadreInfo,
+        name: 'PostCadreInfo'
+      },
+      {
+        path: 'get-cadrepos',
+        component: GetCadreposList
+      },
+      {
+        path: 'get-assessment',
+        component: GetCadreAssList
       }
     ]
   }
@@ -80,7 +108,7 @@ const router = createRouter({
 
 // 路由守卫（可选：校验登录）
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('jwt_token')
+  const token = sessionStorage.getItem('jwt_token')
   if (!token && to.path !== '/login') {
     next('/login')
   } else {

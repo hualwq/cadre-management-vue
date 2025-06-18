@@ -138,7 +138,8 @@ const form = ref({
   family_members: []
 })
 
-const originalForm = ref({}) // 保存原始数据
+const originalForm = ref({})
+const photoFile = ref(null) // 保存原始上传图片
 
 const fetchUserId = async () => {
   try {
@@ -164,7 +165,7 @@ const fetchData = async () => {
     })
     if (res.data.code === 200 && res.data.data) {
       Object.assign(form.value, res.data.data)
-      Object.assign(originalForm.value, res.data.data) // 保存原始数据
+      Object.assign(originalForm.value, res.data.data)
     }
 
     const famRes = await request.get('/admin/fammonbycadreid', {
@@ -172,7 +173,7 @@ const fetchData = async () => {
     })
     if (famRes.data.code === 200) {
       form.value.family_members = famRes.data.data || []
-      originalForm.value.family_members = [...form.value.family_members] // 保存原始家庭成员数据
+      originalForm.value.family_members = [...form.value.family_members]
     }
 
     const resRes = await request.get('/admin/resmonbycadreid', {
@@ -180,7 +181,7 @@ const fetchData = async () => {
     })
     if (resRes.data.code === 200) {
       form.value.resumes = resRes.data.data || []
-      originalForm.value.resumes = [...form.value.resumes] // 保存原始简历数据
+      originalForm.value.resumes = [...form.value.resumes]
     }
   } catch (err) {
     console.error('数据加载失败', err)
@@ -191,21 +192,11 @@ onMounted(() => {
   fetchData()
 })
 
-const dataURLtoFile = (dataurl, filename) => {
-  const arr = dataurl.split(',')
-  const mime = arr[0].match(/:(.*?);/)[1]
-  const bstr = atob(arr[1])
-  let n = bstr.length
-  const u8arr = new Uint8Array(n)
-  while (n--) u8arr[n] = bstr.charCodeAt(n)
-  return new File([u8arr], filename, { type: mime })
-}
-
 // 比较两个对象，返回有变化的字段
 const getChangedFields = (obj1, obj2) => {
   const changed = {}
   for (const key in obj1) {
-    if (JSON.stringify(obj1[key])!== JSON.stringify(obj2[key])) {
+    if (JSON.stringify(obj1[key]) !== JSON.stringify(obj2[key])) {
       changed[key] = obj1[key]
     }
   }
@@ -214,13 +205,15 @@ const getChangedFields = (obj1, obj2) => {
 
 async function submitForm() {
   try {
-    // 干部信息
     const method = form.value.user_id ? 'put' : 'post'
-    const changedMainFields = getChangedFields(form.value, originalForm.value)
+    const mainData = { ...form.value }
+    delete mainData.photo_url
+
+    const changedMainFields = getChangedFields(mainData, originalForm.value)
     if (Object.keys(changedMainFields).length > 0) {
       const mainRes = await request[method]('/cadre/cadreinfo', changedMainFields)
 
-      if (mainRes.data.code!== 200) {
+      if (mainRes.data.code !== 200) {
         ElMessage.error('提交失败：' + mainRes.data.msg)
         return
       }
@@ -229,7 +222,6 @@ async function submitForm() {
       form.value.user_id = user_id
     }
 
-    // 简历信息
     for (const resume of form.value.resumes) {
       const originalResume = originalForm.value.resumes.find(r => r.id === resume.id)
       if (originalResume) {
@@ -244,7 +236,6 @@ async function submitForm() {
       }
     }
 
-    // 家庭成员信息
     for (const member of form.value.family_members) {
       const originalMember = originalForm.value.family_members.find(m => m.id === member.id)
       if (originalMember) {
@@ -259,17 +250,24 @@ async function submitForm() {
       }
     }
 
-    // 上传照片
-    if (form.value.photo_url &&!form.value.photo_url.startsWith('http')) {
-      const file = dataURLtoFile(form.value.photo_url, 'photo.jpg')
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('cadreId', form.value.user_id)
-      const imgRes = await request.post('/cadre/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      if (imgRes.data.code!== 200) {
-        ElMessage.error('照片上传失败：' + imgRes.data.msg)
+    if (photoFile.value) {
+      try {
+        const formData = new FormData()
+        formData.append('image', photoFile.value)
+
+        const imgRes = await request.post('/cadre/image', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+
+        if (imgRes.data.code !== 200) {
+          ElMessage.error('照片上传失败：' + imgRes.data.msg)
+          return
+        }
+      } catch (error) {
+        console.error('照片上传错误:', error)
+        ElMessage.error('照片上传过程中发生错误')
         return
       }
     }
@@ -281,7 +279,6 @@ async function submitForm() {
   }
 }
 
-// 其他函数保持不变
 function resetForm() {
   for (let key in form.value) {
     if (Array.isArray(form.value[key])) {
@@ -317,6 +314,8 @@ function removeFamilyMember(index) {
 async function uploadPhoto(event) {
   const file = event.target.files[0]
   if (!file) return
+  photoFile.value = file
+
   const reader = new FileReader()
   reader.onload = () => {
     form.value.photo_url = reader.result
@@ -324,6 +323,7 @@ async function uploadPhoto(event) {
   reader.readAsDataURL(file)
 }
 </script>
+
 
 <style scoped>
 /* 与原样式一致 */

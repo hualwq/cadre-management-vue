@@ -1,103 +1,93 @@
 <template>
-  <div class="form-container">
-    <h2 class="form-title">干部信息</h2>
-    <table class="info-table">
-      <tr>
-        <td>姓 名</td><td><input v-model="form.name" /></td>
-        <td>性 别</td><td><input v-model="form.gender" /></td>
-        <td>出生年月</td><td><input v-model="form.birth_date" /></td>
-        <td rowspan="4" class="photo-cell">
-          <img v-if="form.photo_url" :src="form.photo_url" class="photo" />
-          <input type="file" @change="uploadPhoto" />
-        </td>
-      </tr>
-      <tr>
-        <td>年 龄</td><td><el-input-number v-model="form.age" :min="0" :max="150" /></td>
-        <td>民 族</td><td><input v-model="form.ethnic_group" /></td>
-        <td>籍 贯</td><td><input v-model="form.native_place" /></td>
-      </tr>
-      <tr>
-        <td>出 生 地</td><td><input v-model="form.birth_place" /></td>
-        <td>政治面貌</td><td><input v-model="form.political_status" /></td>
-        <td>参加工作时间</td><td><input v-model="form.work_start_date" /></td>
-      </tr>
-      <tr>
-        <td>健康状况</td><td><input v-model="form.health_status" /></td>
-        <td>专业技术职务</td><td><input v-model="form.professional_title" /></td>
-        <td>熟悉专业与专长</td><td><input v-model="form.specialty" /></td>
-      </tr>
-      <tr>
-        <td>现任职务</td>
-        <td colspan="6"><input v-model="form.current_position" /></td>
-      </tr>
-      <tr>
-        <td>奖惩情况</td>
-        <td colspan="6"><textarea v-model="form.awards_and_punishments" rows="2" /></td>
-      </tr>
-      <tr>
-        <td>年度考核结果</td>
-        <td colspan="6"><textarea v-model="form.annual_assessment" rows="2" /></td>
-      </tr>
-      <tr>
-        <td>全日制学历</td><td><input v-model="form.full_time_education_degree" /></td>
-        <td>毕业院校及专业</td><td colspan="2"><input v-model="form.full_time_education_school" /></td>
-        <td>在职学历</td><td><input v-model="form.on_the_job_education_degree" /></td>
-      </tr>
-      <tr>
-        <td>在职毕业院校及专业</td>
-        <td colspan="6"><input v-model="form.on_the_job_education_school" /></td>
-      </tr>
-      <tr>
-        <td>联系电话</td><td><input v-model="form.phone" /></td>
-        <td>电子邮箱</td><td><input v-model="form.email" /></td>
-        <td>填表人</td><td><input v-model="form.filled_by" /></td>
-      </tr>
-      <tr>
-        <td>报送单位</td><td><input v-model="form.reporting_unit" /></td>
-        <td>审批权限</td><td colspan="3"><input v-model="form.approval_authority" /></td>
-      </tr>
-      <tr>
-        <td>行政任命情况</td>
-        <td colspan="6"><input v-model="form.administrative_appointment" /></td>
-      </tr>
-    </table>
+  <div class="cadre-info-form-container">
+    <el-card class="box-card">
+      <template #header>
+        <div class="card-header">
+          <h2 class="page-title">干部信息详情</h2>
+          <div class="action-buttons">
+            <el-button type="primary" @click="submitForm">保存</el-button>
+            <el-button @click="resetForm">重置</el-button>
+          </div>
+        </div>
+      </template>
 
-    <h3 class="form-title">简历信息</h3>
-    <table class="info-table">
-      <tr>
-        <td>起始时间</td><td>结束时间</td><td>所在单位</td><td>部门</td><td>职务</td><td>操作</td>
-      </tr>
-      <tr v-for="(resume, index) in form.resumes" :key="index">
-        <td><input v-model="resume.start_date" /></td>
-        <td><input v-model="resume.end_date" /></td>
-        <td><input v-model="resume.organization" /></td>
-        <td><input v-model="resume.department" /></td>
-        <td><input v-model="resume.position" /></td>
-        <td><el-button type="danger" size="small" @click="removeResume(index)">删除</el-button></td>
-      </tr>
-    </table>
-    <el-button size="small" type="primary" @click="addResume">添加简历</el-button>
+      <div class="form-content">
+        <!-- 基本信息 -->
+        <h3 class="section-title">基本信息</h3>
+        <el-form :model="form" label-width="120px">
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="姓名">
+                <el-input v-model="form.name" disabled />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="学工号">
+                <el-input v-model="form.user_id" disabled />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="部门">
+                <el-input v-model="form.department" disabled />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="类别">
+                <el-input v-model="form.category" disabled />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="任职组织">
+                <el-input v-model="form.office" disabled />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="学年学期">
+                <el-input v-model="form.academic_year" disabled />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="申请日期">
+                <el-input :value="`${form.applied_at_year}-${form.applied_at_month}-${form.applied_at_day}`" disabled />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="审核状态">
+                <el-tag :type="form.Audited ? 'success' : 'warning'">
+                  {{ form.Audited ? '已审核' : '未审核' }}
+                </el-tag>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="职位ID">
+                <el-input v-model="form.pos_id" disabled />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
 
-    <h3 class="form-title">家庭成员信息</h3>
-    <table class="info-table">
-      <tr>
-        <td>关系</td><td>姓名</td><td>出生日期</td><td>政治面貌</td><td>工作单位</td><td>操作</td>
-      </tr>
-      <tr v-for="(member, index) in form.family_members" :key="index">
-        <td><input v-model="member.relation" /></td>
-        <td><input v-model="member.name" /></td>
-        <td><input v-model="member.birth_date" /></td>
-        <td><input v-model="member.political_status" /></td>
-        <td><input v-model="member.work_unit" /></td>
-        <td><el-button type="danger" size="small" @click="removeFamilyMember(index)">删除</el-button></td>
-      </tr>
-    </table>
-    <el-button size="small" type="primary" @click="addFamilyMember">添加家庭成员</el-button>
-
-    <div class="form-buttons">
-      <el-button type="primary" @click="submitForm">提交</el-button>
-      <el-button @click="resetForm">重置</el-button>
-    </div>
+        <!-- 年度信息 -->
+        <h3 class="section-title">年度信息</h3>
+        <el-table :data="positionExpList" style="width: 100%" border>
+          <el-table-column prop="year" label="年份" width="120" />
+          <el-table-column prop="department" label="部门" width="180" />
+          <el-table-column prop="position" label="职位" width="180" />
+          <el-table-column prop="Audited" label="审核状态" width="120">
+            <template #default="{ row }">
+              <el-tag :type="row.Audited ? 'success' : 'warning'">
+                {{ row.Audited ? '已审核' : '未审核' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -105,246 +95,129 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useRoute } from 'vue-router'
 
+// 获取路由参数
+const route = useRoute()
+const id = route.query.id
+
+// 初始化数据
 const form = ref({
+  id: 0,
   user_id: '',
   name: '',
-  gender: '',
-  birth_date: '',
-  age: 0,
-  ethnic_group: '',
-  native_place: '',
-  birth_place: '',
-  political_status: '',
-  work_start_date: '',
-  health_status: '',
-  professional_title: '',
-  specialty: '',
-  phone: '',
-  current_position: '',
-  awards_and_punishments: '',
-  annual_assessment: '',
+  phone_number: '',
   email: '',
-  filled_by: '',
-  full_time_education_degree: '',
-  full_time_education_school: '',
-  on_the_job_education_degree: '',
-  on_the_job_education_school: '',
-  reporting_unit: '',
-  approval_authority: '',
-  administrative_appointment: '',
-  photo_url: '',
-  resumes: [],
-  family_members: []
+  department: '',
+  category: '',
+  office: '',
+  academic_year: '',
+  positions: '',
+  applied_at_year: 0,
+  applied_at_month: 0,
+  applied_at_day: 0,
+  Audited: false,
+  pos_id: 0
 })
 
-const fetchUserId = async () => {
+const positionExpList = ref([]) // 年度信息列表
+const isLoading = ref(false) // 加载状态
+
+// 加载干部信息
+const fetchCadreInfo = async (cadreId) => {
+  isLoading.value = true
   try {
-    const res = await request.get('/cadre/getuserid')
-    if (res.data.code === 200 && res.data.data) {
-      form.value.user_id = res.data.data.user_id
-      return res.data.data.user_id
-    }
-  } catch (err) {
-    console.error('获取用户 ID 失败', err)
-    ElMessage.error('获取用户 ID 失败')
-  }
-  return null
-}
-
-
-const fetchData = async () => {
-  const userId = await fetchUserId()
-  if (!userId) return
-
-  try {
-    const res = await request.get('/admin/cadreinfo',{
-      params: { user_id: userId }
+    const response = await request.get('/admin/phmodbyid', {
+      params: { id: cadreId }
     })
-    if (res.data.code === 200 && res.data.data) {
-      Object.assign(form.value, res.data.data)
-    }
-
-    const famRes = await request.get('/admin/fammonbycadreid', {
-      params: { user_id: userId }
-    })
-    if (famRes.data.code === 200) {
-      form.value.family_members = famRes.data.data || []
-    }
-
-    const resRes = await request.get('/admin/resmonbycadreid', {
-      params: { user_id: userId }
-    })
-    if (resRes.data.code === 200) {
-      form.value.resumes = resRes.data.data || []
-    }
-  } catch (err) {
-    console.error('数据加载失败', err)
-  }
-}
-
-onMounted(() => {
-  fetchData()
-})
-
-const dataURLtoFile = (dataurl, filename) => {
-  const arr = dataurl.split(',')
-  const mime = arr[0].match(/:(.*?);/)[1]
-  const bstr = atob(arr[1])
-  let n = bstr.length
-  const u8arr = new Uint8Array(n)
-  while (n--) u8arr[n] = bstr.charCodeAt(n)
-  return new File([u8arr], filename, { type: mime })
-}
-
-async function submitForm() {
-  try {
-    // 干部信息
-    const method = form.value.user_id ? 'put' : 'post'
-    const mainRes = await request[method]('/cadre/cadreinfo', { ...form.value })
-
-    if (mainRes.data.code !== 200) {
-      ElMessage.error('提交失败：' + mainRes.data.msg)
-      return
-    }
-
-    const user_id = mainRes.data.data?.user_id || form.value.user_id
-    form.value.user_id = user_id
-
-    // 简历信息
-    for (const resume of form.value.resumes) {
-      resume.user_id = user_id
-      if (resume.id) {
-        await request.put('/cadre/resume', resume)
-      } else {
-        await request.post('/cadre/resume', resume)
+    
+    if (response.data.code === 200) {
+      form.value = response.data.data
+      // 获取年度信息
+      if (form.value.pos_id) {
+        await fetchPositionExp(form.value.pos_id)
       }
-    }
-
-    // 家庭成员信息
-    for (const member of form.value.family_members) {
-      member.user_id = user_id
-      if (member.id) {
-        await request.put('/cadre/familymember', member)
-      } else {
-        await request.post('/cadre/familymember', member)
-      }
-    }
-
-    // 上传照片
-    if (form.value.photo_url && !form.value.photo_url.startsWith('http')) {
-      const file = dataURLtoFile(form.value.photo_url, 'photo.jpg')
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('cadreId', user_id)
-      const imgRes = await request.post('/cadre/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      if (imgRes.data.code !== 200) {
-        ElMessage.error('照片上传失败：' + imgRes.data.msg)
-        return
-      }
-    }
-
-    ElMessage.success('提交成功')
-  } catch (e) {
-    console.error(e)
-    ElMessage.error('提交出错')
-  }
-}
-
-function resetForm() {
-  for (let key in form.value) {
-    if (Array.isArray(form.value[key])) {
-      form.value[key] = []
     } else {
-      form.value[key] = ''
+      ElMessage.error(response.data.msg || '获取干部信息失败')
     }
+  } catch (error) {
+    console.error('获取干部信息出错:', error)
+    ElMessage.error('获取干部信息失败')
+  } finally {
+    isLoading.value = false
   }
 }
 
-function addResume() {
-  form.value.resumes.push({
-    user_id: form.value.user_id,
-    start_date: '', end_date: '', organization: '', department: '', position: ''
-  })
-}
-
-function addFamilyMember() {
-  form.value.family_members.push({
-    user_id: form.value.user_id,
-    relation: '', name: '', birth_date: '', political_status: '', work_unit: ''
-  })
-}
-
-function removeResume(index) {
-  form.value.resumes.splice(index, 1)
-}
-
-function removeFamilyMember(index) {
-  form.value.family_members.splice(index, 1)
-}
-
-async function uploadPhoto(event) {
-  const file = event.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    form.value.photo_url = reader.result
+// 加载年度信息
+const fetchPositionExp = async (posId) => {
+  try {
+    const response = await request.get('/cadre/getposexpbyposid', {
+      params: { id: posId }
+    })
+    
+    if (response.data.code === 200) {
+      positionExpList.value = response.data.data.lists || []
+    } else {
+      ElMessage.error(response.data.msg || '获取年度信息失败')
+    }
+  } catch (error) {
+    console.error('获取年度信息出错:', error)
+    ElMessage.error('获取年度信息失败')
   }
-  reader.readAsDataURL(file)
 }
+
+// 提交表单
+const submitForm = () => {
+  // 这里可以实现编辑功能，根据需求决定是否允许编辑
+  ElMessage({
+    type: 'info',
+    message: '当前为查看模式，暂不支持编辑'
+  })
+}
+
+// 重置表单
+const resetForm = () => {
+  // 重新加载数据
+  fetchCadreInfo(id)
+}
+
+// 页面挂载时加载数据
+onMounted(() => {
+  if (id) {
+    fetchCadreInfo(id)
+  } else {
+    ElMessage.error('缺少必要的参数ID')
+  }
+})
 </script>
 
 <style scoped>
-/* 与原样式一致 */
-.form-container {
-  max-width: 1000px;
-  margin: auto;
+.cadre-info-form-container {
   padding: 20px;
-  font-family: "SimSun", serif;
 }
-.form-title {
-  text-align: center;
-  font-weight: bold;
+
+.page-title {
   font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 16px;
+  color: #303133;
   margin: 20px 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
 }
-.info-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 10px;
-}
-.info-table td {
-  border: 1px solid black;
-  padding: 5px;
-  vertical-align: middle;
-  text-align: center;
-}
-input, textarea {
-  width: 95%;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  font-family: inherit;
-  padding: 2px;
-}
-textarea {
-  resize: none;
-}
-.photo-cell {
-  width: 140px;
-  text-align: center;
-}
-.photo {
-  width: 120px;
-  height: 160px;
-  object-fit: cover;
-  margin-bottom: 5px;
-  border: 1px solid #aaa;
-}
-.form-buttons {
-  margin-top: 20px;
-  text-align: center;
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
 }
 </style>

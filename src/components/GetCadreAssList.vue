@@ -26,7 +26,6 @@
           {{ row.work_summary.length > 15 ? row.work_summary.slice(0, 15) + '...' : row.work_summary }}
         </template>
       </el-table-column>
-
       <el-table-column prop="grade" label="评定等级" />
       <el-table-column prop="Audited" label="是否审核" width="100">
         <template #default="{ row }">
@@ -57,7 +56,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-// import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import request from '../utils/request.js'
 
@@ -71,13 +69,14 @@ const router = useRouter()
 
 const fetchAssessments = async () => {
   try {
-    const res = await request.get('/admin/assessmentbypage', {
+    const res = await request.get('/cadre/getasmodbypage', {
       params: {
         page: currentPage.value,
+        pagesize: pageSize.value,
         audited: showUnauditedOnly.value ? false : undefined,
       },
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('jwt_token')}`
+        Authorization: `Bearer ${localStorage.getItem('jwt_token')}`
       }
     })
     if (res.data.code === 200) {
@@ -102,10 +101,8 @@ const handleFilterChange = () => {
 }
 
 const viewDetail = (id) => {
-  router.push({
-    name: 'GetAssessmentbyid', 
-    query: { id } 
-  })
+  // 这里假设查看详情的路由路径，你可以根据实际情况修改
+  router.push({ name: 'PostAssessment', query: { id } })
 }
 
 onMounted(() => {
@@ -118,9 +115,6 @@ onMounted(() => {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* 水平居中 */
 }
 
 .page-title {
@@ -132,11 +126,6 @@ onMounted(() => {
 .filter-bar {
   margin-bottom: 15px;
   text-align: center;
-}
-
-.el-table {
-  width: 100%; /* 确保表格宽度为容器宽度 */
-  max-width: 1200px; /* 限制最大宽度 */
 }
 
 .pagination {

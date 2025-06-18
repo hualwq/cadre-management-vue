@@ -1,6 +1,6 @@
 <template>
   <div class="proof-container">
-    <h2 class="page-title">干部任职证明审核列表</h2>
+    <h2 class="page-title">干部任职信息列表</h2>
 
     <el-table :data="proofList" style="width: 100%" border>
       <el-table-column prop="name" label="姓名" />
@@ -54,17 +54,18 @@ const router = useRouter()
 
 const fetchProofList = async () => {
   try {
-    const res = await request.get('/admin/phmodbypage', {
+    const res = await request.get('/cadre/getphmodbypage', {
       params: {
         page: currentPage.value,
-      },
+        pagesize: pageSize.value
+      }
     })
     if (res.data.code === 200) {
       proofList.value = res.data.data.lists
       total.value = res.data.data.total
     }
   } catch (error) {
-    console.error('获取任职证明数据失败:', error)
+    console.error('获取任职信息数据失败:', error)
   }
 }
 
@@ -74,10 +75,8 @@ const handlePageChange = (newPage) => {
 }
 
 const viewDetail = (id) => {
-  router.push({
-    name: 'GetPositionhistorybyid',
-    query: { id }
-  })
+  // 这里假设PostCadreposition.vue页面需要id作为参数
+  router.push({ name: 'PostCadreposition', query: { id } })
 }
 
 onMounted(() => {

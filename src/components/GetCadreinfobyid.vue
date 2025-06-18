@@ -64,27 +64,27 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
-const id = route.query.id
+const user_id = route.query.user_id
 const baseInfo = ref({})
 const familyList = ref([])
 const resumeList = ref([])
 
 const fetchCadreInfo = async () => {
   try {
-    const res = await axios.get('/admin/cadreinfo', { params: { id } })
+    const res = await axios.get('/admin/cadreinfo', { params: { user_id } })
     if (res.data.code === 200) {
       baseInfo.value = res.data.data
-      fetchFamily(baseInfo.value.user_id)
-      fetchResume()
+      fetchFamily(user_id)
+      fetchResume(user_id)
     }
   } catch (err) {
     console.error('获取干部基本信息失败:', err)
   }
 }
 
-const fetchFamily = async (cadre_id) => {
+const fetchFamily = async (user_id) => {
   try {
-    const res = await axios.get('/admin/fammonbycadreid', { params: { cadre_id } })
+    const res = await axios.get('/admin/fammonbycadreid', { params: { user_id } })
     if (res.data.code === 200) {
       familyList.value = res.data.data || []
     }
@@ -93,9 +93,9 @@ const fetchFamily = async (cadre_id) => {
   }
 }
 
-const fetchResume = async () => {
+const fetchResume = async (user_id) => {
   try {
-    const res = await axios.get('/admin/resumebyid', { params: { id } })
+    const res = await axios.get('/admin/resmonbycadreid', { params: { user_id } })
     if (res.data.code === 200) {
       resumeList.value = res.data.data || []
     }

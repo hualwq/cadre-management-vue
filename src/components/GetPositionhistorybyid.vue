@@ -26,7 +26,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, ElMessage } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
@@ -41,24 +41,32 @@ const fetchPositionHistory = async () => {
   try {
     // 获取基本信息
     const res1 = await axios.get('/admin/phmodbyid', { params: { id } })
-    if (res1.data.code === 200) {
+    if (res1 && res1.data && res1.data.code === 200) {
       detail.value = res1.data.data
       buildBaseTable()
-      fetchPositionExp(detail.value.user_id)
+      await fetchPositionExp(detail.value.user_id)
+    } else {
+      console.error('获取基本信息失败，响应数据不符合预期:', res1);
+      ElMessage.error('获取基本信息失败，请稍后重试');
     }
   } catch (err) {
     console.error('获取基本信息失败:', err)
+    ElMessage.error('获取基本信息失败，请稍后重试');
   }
 }
 
 const fetchPositionExp = async (cadre_id) => {
   try {
     const res2 = await axios.get('/admin/poexpbycadreid', { params: { cadre_id } })
-    if (res2.data.code === 200) {
+    if (res2 && res2.data && res2.data.code === 200) {
       positionList.value = res2.data.data || []
+    } else {
+      console.error('获取任职记录失败，响应数据不符合预期:', res2);
+      ElMessage.error('获取任职记录失败，请稍后重试');
     }
   } catch (err) {
     console.error('获取任职记录失败:', err)
+    ElMessage.error('获取任职记录失败，请稍后重试');
   }
 }
 
@@ -72,7 +80,12 @@ const buildBaseTable = () => {
 }
 
 onMounted(() => {
-  fetchPositionHistory()
+  if (id) {
+    fetchPositionHistory()
+  } else {
+    console.error('未获取到有效的 id 参数')
+    ElMessage.error('未获取到有效的任职证明记录 id，请检查链接')
+  }
 })
 </script>
 
