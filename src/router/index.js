@@ -13,6 +13,8 @@ import GetPositionhistorybypage from '../components/GetPositionhistory.vue';
 import AdminHome from '../components/AdminHome.vue'
 import GetCadreposList from '../components/GetCadreposList.vue'
 import GetCadreAssList from '../components/GetCadreAssList.vue'
+import GetAsscadrebyid from '../components/GetAsscadrebyid'
+import GetPoscadrebyid from '../components/GetPoscadrebyid'
 
 const routes = [
   {
@@ -96,6 +98,16 @@ const routes = [
       {
         path: 'get-assessment',
         component: GetCadreAssList
+      },
+      {
+        path: 'get-assessmentbyid',
+        component: GetAsscadrebyid,
+        name: 'GetAsscadrebyid'
+      },
+      {
+        path: 'get-positionhistorybyid',
+        component: GetPoscadrebyid,
+        name: 'GetPoscadrebyid'
       }
     ]
   }
@@ -117,3 +129,37 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+
+
+/* 
+普通管理员
+1，添加个人基本信息
+2，添加任职证明
+3，添加工作考核证明
+4，查看个人信息信息待审核列表
+5，查看待审核工作考核列表
+6，查看待审核任职证明列表
+7，审核个人信息（无法修改）
+8，审核任职证明信息（无法修改）
+9，审核工作考核信息（无法修改）
+10，管理员home
+*/
+
+/*
+普通用户
+1，添加个人基本信息
+2，添加任职证明
+3，添加工作考核证明
+4，查看并修改个人信息
+5，查看个人的工作考核列表（复用管理员页面）
+6，查看个人任职证明列表（复用管理员页面）
+7，查看个人工作考核信息（可以修改）
+8，查看个人任职证明信息（可以修改）
+9，普通用户home
+*/
+
+/*
+校级管理员
+1，校级管理员home
+2，查看所有用户列表
+*/

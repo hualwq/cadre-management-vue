@@ -7,7 +7,13 @@
         <td>性 别</td><td><input v-model="form.gender" /></td>
         <td>出生年月</td><td><input v-model="form.birth_date" /></td>
         <td rowspan="4" class="photo-cell">
-          <img v-if="form.photo_url" :src="form.photo_url" class="photo" />
+          <img
+            v-if="form.photo_url"
+            :src="form.photo_url"
+            class="photo"
+            @error="form.photo_url = null"
+          />
+
           <input type="file" @change="uploadPhoto" />
         </td>
       </tr>
@@ -163,10 +169,15 @@ const fetchData = async () => {
     const res = await request.get('/admin/cadreinfo', {
       params: { user_id: userId }
     })
-    if (res.data.code === 200 && res.data.data) {
+        if (res.data.code === 200 && res.data.data) {
       Object.assign(form.value, res.data.data)
       Object.assign(originalForm.value, res.data.data)
+
+      if (res.data.data.photourl) {
+        form.value.photo_url = `http://localhost:8088/upload/images/${res.data.data.photourl}`
+      }
     }
+
 
     const famRes = await request.get('/admin/fammonbycadreid', {
       params: { user_id: userId }

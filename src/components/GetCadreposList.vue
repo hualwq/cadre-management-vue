@@ -76,7 +76,7 @@ const handlePageChange = (newPage) => {
 
 const viewDetail = (id) => {
   // 这里假设PostCadreposition.vue页面需要id作为参数
-  router.push({ name: 'PostCadreposition', query: { id } })
+  router.push({ name: 'GetPositionhistorybyid', query: { id } })
 }
 
 onMounted(() => {

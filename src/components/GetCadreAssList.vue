@@ -3,9 +3,8 @@
     <h2 class="page-title">干部工作考核列表</h2>
 
     <div class="filter-bar">
-      <el-checkbox v-model="showUnauditedOnly" @change="handleFilterChange">
-        只看未审核
-      </el-checkbox>
+      <!-- 新增“新建审核”按钮 -->
+      <el-button type="primary" @click="newAssessment">新建审核</el-button>
     </div>
 
     <el-table :data="assessments" style="width: 100%" border>
@@ -26,6 +25,7 @@
           {{ row.work_summary.length > 15 ? row.work_summary.slice(0, 15) + '...' : row.work_summary }}
         </template>
       </el-table-column>
+
       <el-table-column prop="grade" label="评定等级" />
       <el-table-column prop="Audited" label="是否审核" width="100">
         <template #default="{ row }">
@@ -69,10 +69,9 @@ const router = useRouter()
 
 const fetchAssessments = async () => {
   try {
-    const res = await request.get('/cadre/getasmodbypage', {
+    const res = await request.get('/admin/assessmentbypage', {
       params: {
         page: currentPage.value,
-        pagesize: pageSize.value,
         audited: showUnauditedOnly.value ? false : undefined,
       },
       headers: {
@@ -95,14 +94,14 @@ const handlePageChange = (newPage) => {
   fetchAssessments()
 }
 
-const handleFilterChange = () => {
-  currentPage.value = 1
-  fetchAssessments()
-}
 
 const viewDetail = (id) => {
-  // 这里假设查看详情的路由路径，你可以根据实际情况修改
-  router.push({ name: 'PostAssessment', query: { id } })
+  router.push({ name: 'GetAssessmentbyid', query: { id } })
+}
+
+// 新增“新建审核”函数
+const newAssessment = () => {
+  router.push('/cadrehome/post-assessment')
 }
 
 onMounted(() => {
