@@ -1,12 +1,12 @@
 <template>
   <div class="assessment-container">
     <h2 class="page-title">干部工作考核列表</h2>
-
+    <el-button type="primary" @click="createNewAssessment">新建考核</el-button>
     <div class="filter-bar">
-      <!-- 新增“新建审核”按钮 -->
-      <el-button type="primary" @click="newAssessment">新建审核</el-button>
+      <el-checkbox v-model="showUnauditedOnly" @change="handleFilterChange">
+        只看未审核
+      </el-checkbox>
     </div>
-
     <el-table :data="assessments" style="width: 100%" border>
       <el-table-column prop="name" label="姓名" />
       <el-table-column prop="user_id" label="学（工）号" />
@@ -25,7 +25,6 @@
           {{ row.work_summary.length > 15 ? row.work_summary.slice(0, 15) + '...' : row.work_summary }}
         </template>
       </el-table-column>
-
       <el-table-column prop="grade" label="评定等级" />
       <el-table-column prop="Audited" label="是否审核" width="100">
         <template #default="{ row }">
@@ -36,11 +35,10 @@
       </el-table-column>
       <el-table-column label="操作" width="180">
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click="viewDetail(row.id)">查看详情</el-button>
+          <el-button type="primary" size="small" @click="viewDetail(row.id, row.Audited)">查看详情</el-button>
         </template>
       </el-table-column>
     </el-table>
-
     <div class="pagination">
       <el-pagination
         background
@@ -94,13 +92,26 @@ const handlePageChange = (newPage) => {
   fetchAssessments()
 }
 
-
-const viewDetail = (id) => {
-  router.push({ name: 'GetAssessmentbyid', query: { id } })
+const handleFilterChange = () => {
+  currentPage.value = 1
+  fetchAssessments()
 }
 
-// 新增“新建审核”函数
-const newAssessment = () => {
+const viewDetail = (id, audited) => {
+  if (audited) {
+    router.push({
+      name: 'GetAssCadrebyid',
+      query: {id}
+    })
+  } else {
+    router.push({
+      name: 'PostAssessment',
+      query: {id}
+    })
+  }
+}
+
+const createNewAssessment = () => {
   router.push('/cadrehome/post-assessment')
 }
 

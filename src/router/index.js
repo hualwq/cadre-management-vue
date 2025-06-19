@@ -13,8 +13,8 @@ import GetPositionhistorybypage from '../components/GetPositionhistory.vue';
 import AdminHome from '../components/AdminHome.vue'
 import GetCadreposList from '../components/GetCadreposList.vue'
 import GetCadreAssList from '../components/GetCadreAssList.vue'
-import GetAsscadrebyid from '../components/GetAsscadrebyid'
-import GetPoscadrebyid from '../components/GetPoscadrebyid'
+import GetAssCadrebyid from '../components/GetAssCadrebyid.vue'
+import GetPosCadrebyid from '../components/GetPosCadrebyid.vue'
 
 const routes = [
   {
@@ -101,13 +101,13 @@ const routes = [
       },
       {
         path: 'get-assessmentbyid',
-        component: GetAsscadrebyid,
-        name: 'GetAsscadrebyid'
+        component: GetAssCadrebyid,
+        name: 'GetAssCadrebyid'
       },
       {
         path: 'get-positionhistorybyid',
-        component: GetPoscadrebyid,
-        name: 'GetPoscadrebyid'
+        component: GetPosCadrebyid,
+        name: 'GetPosCadrebyid'
       }
     ]
   }

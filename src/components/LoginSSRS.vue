@@ -80,7 +80,7 @@ export default {
           if (data.role === 'admin') {
             this.$router.push('/home/post-assessment'); // admin 默认跳转到某个页面
           } else if (data.role === 'cadre') {
-            this.$router.push('/cadrehome/post-assessment'); // cadre 默认跳转
+            this.$router.push('/cadrehome/post-cadreinfo'); // cadre 默认跳转
           } else {
             this.$message.error('未知角色，无法登录');
           }

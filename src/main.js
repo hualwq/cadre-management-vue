@@ -5,7 +5,7 @@ import axios from 'axios';
 import App from './App.vue';
 import router from './router/index.js';
 
-const token = localStorage.getItem('jwt_token');
+const token = sessionStorage.getItem('jwt_token');
 
 if (token) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

@@ -1,7 +1,7 @@
 <template>
   <div class="proof-container">
-    <h2 class="page-title">干部任职信息列表</h2>
-
+    <h2 class="page-title">干部任职证明审核列表</h2>
+    <el-button type="primary" @click="createNewPosition">新建任职证明</el-button>
     <el-table :data="proofList" style="width: 100%" border>
       <el-table-column prop="name" label="姓名" />
       <el-table-column prop="user_id" label="学（工）号" />
@@ -22,11 +22,10 @@
       </el-table-column>
       <el-table-column label="操作" width="120">
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click="viewDetail(row.id)">查看详情</el-button>
+          <el-button type="primary" size="small" @click="viewDetail(row.id, row.Audited)">查看详情</el-button>
         </template>
       </el-table-column>
     </el-table>
-
     <div class="pagination">
       <el-pagination
         background
@@ -54,18 +53,17 @@ const router = useRouter()
 
 const fetchProofList = async () => {
   try {
-    const res = await request.get('/cadre/getphmodbypage', {
+    const res = await request.get('/admin/phmodbypage', {
       params: {
         page: currentPage.value,
-        pagesize: pageSize.value
-      }
+      },
     })
     if (res.data.code === 200) {
       proofList.value = res.data.data.lists
       total.value = res.data.data.total
     }
   } catch (error) {
-    console.error('获取任职信息数据失败:', error)
+    console.error('获取任职证明数据失败:', error)
   }
 }
 
@@ -74,9 +72,22 @@ const handlePageChange = (newPage) => {
   fetchProofList()
 }
 
-const viewDetail = (id) => {
-  // 这里假设PostCadreposition.vue页面需要id作为参数
-  router.push({ name: 'GetPositionhistorybyid', query: { id } })
+const viewDetail = (id, audited) => {
+  if (audited) {
+    router.push({
+      name: 'GetPosCadrebyid',
+      query: {id}
+    })
+  } else {
+    router.push({
+      name: 'PostCadreposition',
+      query: {id}
+    })
+  }
+}
+
+const createNewPosition = () => {
+  router.push('/home/post-cadreposition')
 }
 
 onMounted(() => {
